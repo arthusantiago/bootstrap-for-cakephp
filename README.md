@@ -1,0 +1,139 @@
+# Bootstrap for CakePHP
+
+[![Packagist](https://img.shields.io/packagist/v/arthursantiago/bootstrap-for-cakephp.svg)](https://packagist.org/packages/arthursantiago/bootstrap-for-cakephp)
+[![PHP Version](https://img.shields.io/packagist/php-v/arthursantiago/bootstrap-for-cakephp)](https://packagist.org/packages/arthursantiago/bootstrap-for-cakephp)
+[![License](https://img.shields.io/packagist/l/arthursantiago/bootstrap-for-cakephp.svg)](LICENSE)
+
+Automatically copy [Bootstrap](https://getbootstrap.com/), [Bootstrap Icons](https://icons.getbootstrap.com/), and [Popperjs](https://popper.js.org/) assets to your CakePHP `webroot/` directory when packages are installed or updated via Composer.
+
+## Features
+
+- ✨ Automatic copying of Bootstrap CSS and JS files
+- ✨ Automatic copying of Bootstrap Icons CSS and fonts
+- ✨ Automatic copying of Popperjs library
+- 🚀 Works with Composer package install/update hooks
+- 🛠️ Manual CLI command for on-demand copying
+- 📦 Zero dependencies
+- ✅ Fully compatible with CakePHP 4.x and 5.x
+
+## Installation
+
+Install the package via Composer:
+
+```bash
+composer require arthursantiago/bootstrap-for-cakephp
+```
+
+Then ensure you have Bootstrap and its dependencies installed:
+
+```bash
+composer require twbs/bootstrap twbs/bootstrap-icons popperjs/core
+```
+
+## How It Works
+
+This package automatically detects when Bootstrap, Bootstrap Icons, or Popperjs are installed or updated via Composer, and copies the necessary files to your CakePHP `webroot/` directory:
+
+- **Bootstrap CSS/JS** → `webroot/css/minified/` and `webroot/js/minified/`
+- **Bootstrap Icons** → `webroot/css/minified/` and `webroot/css/minified/fonts/`
+- **Popperjs** → `webroot/js/minified/`
+
+## Usage
+
+### Automatic (Recommended)
+
+Once installed, the package automatically copies assets whenever you:
+
+```bash
+composer install
+composer update
+composer require twbs/bootstrap
+composer update twbs/bootstrap
+```
+
+### Manual Copy
+
+If you need to manually copy assets, use the CLI command:
+
+```bash
+# Copy specific package assets
+composer copy-bootstrap-assets twbs/bootstrap twbs/bootstrap-icons popperjs/core
+
+# Or copy each one individually
+composer copy-bootstrap-assets twbs/bootstrap
+composer copy-bootstrap-assets twbs/bootstrap-icons
+composer copy-bootstrap-assets popperjs/core
+```
+
+## Template Integration
+
+In your CakePHP templates, reference the copied assets:
+
+```html
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="<?= BASE . 'css/minified/bootstrap.min.css' ?>">
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="<?= BASE . 'css/minified/bootstrap-icons.min.css' ?>">
+
+<!-- Popperjs (required for Bootstrap dropdowns/tooltips) -->
+<script src="<?= BASE . 'js/minified/popper.min.js' ?>"></script>
+
+<!-- Bootstrap JS -->
+<script src="<?= BASE . 'js/minified/bootstrap.min.js' ?>"></script>
+```
+
+Or using the `Html` helper:
+
+```php
+<?= $this->Html->css('minified/bootstrap.min.css') ?>
+<?= $this->Html->css('minified/bootstrap-icons.min.css') ?>
+<?= $this->Html->script('minified/popper.min.js') ?>
+<?= $this->Html->script('minified/bootstrap.min.js') ?>
+```
+
+## Customizing Asset Paths
+
+If you want to customize where assets are copied, you can extend the `BootstrapAssets` class in your project:
+
+```php
+<?php
+// config/Tools/MyBootstrapAssets.php
+
+namespace App\Config\Tools;
+
+use ArthurSantiago\BootstrapForCakePHP\BootstrapAssets;
+
+class MyBootstrapAssets extends BootstrapAssets
+{
+    // Override the paths as needed
+    private static string $pathDestinoCSS = 'webroot/css/custom';
+    private static string $pathDestinoJS = 'webroot/js/custom';
+    // ... etc
+}
+```
+
+Then update your `composer.json` to reference your custom class instead.
+
+## Requirements
+
+- PHP 8.1 or higher
+- CakePHP 4.0 or higher
+- Composer 2.0 or higher
+
+## License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues and pull requests to improve this package.
+
+## Support
+
+If you encounter any issues, please open an issue on the [GitHub repository](https://github.com/arthusantiago/bootstrap-for-cakephp/issues).
+
+## Changelog
+
+### v1.0.0 (Initial Release)
+- Initial release with support for Bootstrap, Bootstrap Icons, and Popperjs
