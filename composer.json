@@ -1,12 +1,12 @@
 {
-  "name": "arthursantiago/bootstrap-for-cakephp",
+  "name": "arthusantiago/bootstrap-for-cakephp",
   "description": "Automatically copy Bootstrap, Bootstrap Icons, and Popperjs assets to CakePHP webroot directory",
   "type": "library",
   "license": "MIT",
   "authors": [
     {
-      "name": "Arthur Santiago",
-      "email": "arthursantiago@example.com",
+      "name": "Arthu Santiago",
+      "email": "arthusantiago@example.com",
       "homepage": "https://github.com/arthusantiago"
     }
   ],
@@ -32,11 +32,11 @@
   },
   "autoload": {
     "psr-4": {
-      "ArthurSantiago\\BootstrapForCakePHP\\": "src/"
+      "ArthuSantiago\\BootstrapForCakePHP\\": "src/"
     }
   },
   "scripts": {
-    "copy-bootstrap-assets": "ArthurSantiago\\BootstrapForCakePHP\\BootstrapAssets::executarCli"
+    "copy-bootstrap-assets": "ArthuSantiago\\BootstrapForCakePHP\\BootstrapAssets::executarCli"
   },
   "minimum-stability": "stable",
   "prefer-stable": true

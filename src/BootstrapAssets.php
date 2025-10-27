@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace ArthurSantiago\BootstrapForCakePHP;
+namespace ArthuSantiago\BootstrapForCakePHP;
 
 use Composer\Installer\PackageEvent;
 use Composer\Script\Event;

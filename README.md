@@ -1,8 +1,8 @@
 # Bootstrap for CakePHP
 
-[![Packagist](https://img.shields.io/packagist/v/arthursantiago/bootstrap-for-cakephp.svg)](https://packagist.org/packages/arthursantiago/bootstrap-for-cakephp)
-[![PHP Version](https://img.shields.io/packagist/php-v/arthursantiago/bootstrap-for-cakephp)](https://packagist.org/packages/arthursantiago/bootstrap-for-cakephp)
-[![License](https://img.shields.io/packagist/l/arthursantiago/bootstrap-for-cakephp.svg)](LICENSE)
+[![Packagist](https://img.shields.io/packagist/v/arthusantiago/bootstrap-for-cakephp.svg)](https://packagist.org/packages/arthusantiago/bootstrap-for-cakephp)
+[![PHP Version](https://img.shields.io/packagist/php-v/arthusantiago/bootstrap-for-cakephp)](https://packagist.org/packages/arthusantiago/bootstrap-for-cakephp)
+[![License](https://img.shields.io/packagist/l/arthusantiago/bootstrap-for-cakephp.svg)](LICENSE)
 
 Automatically copy [Bootstrap](https://getbootstrap.com/), [Bootstrap Icons](https://icons.getbootstrap.com/), and [Popperjs](https://popper.js.org/) assets to your CakePHP `webroot/` directory when packages are installed or updated via Composer.
 
@@ -21,7 +21,7 @@ Automatically copy [Bootstrap](https://getbootstrap.com/), [Bootstrap Icons](htt
 Install the package via Composer:
 
 ```bash
-composer require arthursantiago/bootstrap-for-cakephp
+composer require arthusantiago/bootstrap-for-cakephp
 ```
 
 Then ensure you have Bootstrap and its dependencies installed:
