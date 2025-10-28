@@ -21,9 +21,9 @@ class BootstrapAssets
      * Bootstrap Icons CSS
      */
     private static string $cssOrigemBootstrapIcons = 'vendor/twbs/bootstrap-icons/font/bootstrap-icons.min.css';
-    private static string $cssDestinoBootstrapIcons = 'webroot/css/minified/bootstrap-icons.min.css';
+    private static string $cssDestinoBootstrapIcons = 'webroot/css/bootstrap-icons.min.css';
     private static string $cssOrigemBootstrapIconsFonts = 'vendor/twbs/bootstrap-icons/font/fonts/';
-    private static string $cssDestinoBootstrapIconsFonts = 'webroot/css/minified/fonts/';
+    private static string $cssDestinoBootstrapIconsFonts = 'webroot/css/fonts/';
 
     /**
      * @var array Bootstrap Icons font files
@@ -37,8 +37,8 @@ class BootstrapAssets
      * Bootstrap dist files
      */
     private static string $vendorBootstrap = 'vendor/twbs/bootstrap/dist/';
-    private static string $pathDestinoJS = 'webroot/js/minified';
-    private static string $pathDestinoCSS = 'webroot/css/minified';
+    private static string $pathDestinoJS = 'webroot/js';
+    private static string $pathDestinoCSS = 'webroot/css';
 
     /**
      * @var array Bootstrap CSS files to copy
@@ -60,7 +60,7 @@ class BootstrapAssets
      * Popperjs library
      */
     private static string $popperOrigem = 'vendor/popperjs/core/dist/umd/popper.min.js';
-    private static string $popperDestino = 'webroot/js/minified/popper.min.js';
+    private static string $popperDestino = 'webroot/js/popper.min.js';
 
     /**
      * Handle post-package installation event

@@ -18,25 +18,25 @@ Automatically copy [Bootstrap](https://getbootstrap.com/), [Bootstrap Icons](htt
 
 ## Installation
 
-Install the package via Composer:
-
-```bash
-composer require arthusantiago/bootstrap-for-cakephp
-```
-
 Then ensure you have Bootstrap and its dependencies installed:
 
 ```bash
 composer require twbs/bootstrap twbs/bootstrap-icons popperjs/core
 ```
 
+Install the package via Composer:
+
+```bash
+composer require arthusantiago/bootstrap-for-cakephp
+```
+
 ## How It Works
 
 This package automatically detects when Bootstrap, Bootstrap Icons, or Popperjs are installed or updated via Composer, and copies the necessary files to your CakePHP `webroot/` directory:
 
-- **Bootstrap CSS/JS** → `webroot/css/minified/` and `webroot/js/minified/`
-- **Bootstrap Icons** → `webroot/css/minified/` and `webroot/css/minified/fonts/`
-- **Popperjs** → `webroot/js/minified/`
+- **Bootstrap CSS/JS** → `webroot/css/` and `webroot/js/`
+- **Bootstrap Icons** → `webroot/css/` and `webroot/css/fonts/`
+- **Popperjs** → `webroot/js/`
 
 ## Usage
 
@@ -63,33 +63,6 @@ composer copy-bootstrap-assets twbs/bootstrap twbs/bootstrap-icons popperjs/core
 composer copy-bootstrap-assets twbs/bootstrap
 composer copy-bootstrap-assets twbs/bootstrap-icons
 composer copy-bootstrap-assets popperjs/core
-```
-
-## Template Integration
-
-In your CakePHP templates, reference the copied assets:
-
-```html
-<!-- Bootstrap CSS -->
-<link rel="stylesheet" href="<?= BASE . 'css/minified/bootstrap.min.css' ?>">
-
-<!-- Bootstrap Icons -->
-<link rel="stylesheet" href="<?= BASE . 'css/minified/bootstrap-icons.min.css' ?>">
-
-<!-- Popperjs (required for Bootstrap dropdowns/tooltips) -->
-<script src="<?= BASE . 'js/minified/popper.min.js' ?>"></script>
-
-<!-- Bootstrap JS -->
-<script src="<?= BASE . 'js/minified/bootstrap.min.js' ?>"></script>
-```
-
-Or using the `Html` helper:
-
-```php
-<?= $this->Html->css('minified/bootstrap.min.css') ?>
-<?= $this->Html->css('minified/bootstrap-icons.min.css') ?>
-<?= $this->Html->script('minified/popper.min.js') ?>
-<?= $this->Html->script('minified/bootstrap.min.js') ?>
 ```
 
 ## Customizing Asset Paths
