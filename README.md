@@ -15,19 +15,22 @@ Automatically copy [Bootstrap](https://getbootstrap.com/), [Bootstrap Icons](htt
 - 🛠️ Manual CLI command for on-demand copying
 - 📦 Zero dependencies
 - ✅ Fully compatible with CakePHP 4.x and 5.x
+- 🔧 Customizable configuration and paths
+- ⚡ Proper error handling with typed exceptions
+- 📝 Comprehensive logging via Composer IO interface
 
 ## Installation
-
-Then ensure you have Bootstrap and its dependencies installed:
-
-```bash
-composer require twbs/bootstrap twbs/bootstrap-icons popperjs/core
-```
 
 Install the package via Composer:
 
 ```bash
 composer require arthusantiago/bootstrap-for-cakephp
+```
+
+Then ensure you have Bootstrap and its dependencies installed:
+
+```bash
+composer require twbs/bootstrap twbs/bootstrap-icons popperjs/core
 ```
 
 ## How It Works
@@ -56,7 +59,10 @@ composer update twbs/bootstrap
 If you need to manually copy assets, use the CLI command:
 
 ```bash
-# Copy specific package assets
+# Copy all supported packages automatically
+composer copy-bootstrap-assets
+
+# Or copy specific package assets
 composer copy-bootstrap-assets twbs/bootstrap twbs/bootstrap-icons popperjs/core
 
 # Or copy each one individually
@@ -65,34 +71,204 @@ composer copy-bootstrap-assets twbs/bootstrap-icons
 composer copy-bootstrap-assets popperjs/core
 ```
 
-## Customizing Asset Paths
+## Template Integration
 
-If you want to customize where assets are copied, you can extend the `BootstrapAssets` class in your project:
+In your CakePHP templates, reference the copied assets:
+
+```html
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="<?= BASE . 'css/bootstrap.min.css' ?>">
+
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="<?= BASE . 'css/bootstrap-icons.min.css' ?>">
+
+<!-- Popperjs (required for Bootstrap dropdowns/tooltips) -->
+<script src="<?= BASE . 'js/popper.min.js' ?>"></script>
+
+<!-- Bootstrap JS -->
+<script src="<?= BASE . 'js/bootstrap.min.js' ?>"></script>
+```
+
+Or using the `Html` helper:
+
+```php
+<?= $this->Html->css('bootstrap.min.css') ?>
+<?= $this->Html->css('bootstrap-icons.min.css') ?>
+<?= $this->Html->script('popper.min.js') ?>
+<?= $this->Html->script('bootstrap.min.js') ?>
+```
+
+## Advanced Usage
+
+### Customizing Asset Paths
+
+Extend the `AssetsConfig` class to customize where assets are copied:
 
 ```php
 <?php
-// config/Tools/MyBootstrapAssets.php
+// config/AssetsConfig.php
 
-namespace App\Config\Tools;
+namespace App\Config;
 
-use ArthurSantiago\BootstrapForCakePHP\BootstrapAssets;
+use ArthuSantiago\BootstrapForCakePHP\AssetsConfig;
 
-class MyBootstrapAssets extends BootstrapAssets
+class MyAssetsConfig extends AssetsConfig
 {
-    // Override the paths as needed
-    private static string $pathDestinoCSS = 'webroot/css/custom';
-    private static string $pathDestinoJS = 'webroot/js/custom';
-    // ... etc
+    protected static string $webrootPath = 'custom_webroot';
+
+    // Override package configuration
+    protected static array $packages = [
+        // ... custom configuration
+    ];
 }
 ```
 
-Then update your `composer.json` to reference your custom class instead.
+Then register your custom config in `composer.json`:
+
+```json
+{
+  "scripts": {
+    "post-install-cmd": [
+      "ArthuSantiago\\BootstrapForCakePHP\\BootstrapAssets::setupAssets"
+    ]
+  }
+}
+```
+
+### Custom Implementations
+
+Extend `BootstrapAssets` to implement custom logic:
+
+```php
+<?php
+namespace App\Tools;
+
+use ArthuSantiago\BootstrapForCakePHP\BootstrapAssets;
+use Composer\Script\Event;
+
+class CustomBootstrapAssets extends BootstrapAssets
+{
+    public static function setupAssets(Event $event): void
+    {
+        parent::setupAssets($event);
+
+        // Add custom logic here
+        // e.g., compile SCSS, minify files, etc.
+    }
+}
+```
+
+## Error Handling
+
+The package includes proper exception handling:
+
+- **`BootstrapAssetsException`** - Base exception for all asset operations
+- **`UnsupportedPackageException`** - Thrown when trying to process unsupported packages
+- **`FileOperationException`** - Thrown when file copy/delete operations fail
+
+```php
+use ArthuSantiago\BootstrapForCakePHP\Exception\FileOperationException;
+use ArthuSantiago\BootstrapForCakePHP\Exception\UnsupportedPackageException;
+
+try {
+    BootstrapAssets::processPackage('twbs/bootstrap');
+} catch (UnsupportedPackageException $e) {
+    // Handle unsupported package
+} catch (FileOperationException $e) {
+    // Handle file operation error
+}
+```
+
+## Testing
+
+Run the test suite:
+
+```bash
+composer test
+```
+
+The package includes comprehensive unit tests for:
+- File operations (copy, delete)
+- Configuration management
+- Path utilities
+- Exception handling
+
+## API Reference
+
+### BootstrapAssets
+
+#### Static Methods
+
+**`processPackage(string $packageName): void`**
+- Process a specific package and copy its assets
+- Throws `UnsupportedPackageException` if package is not supported
+
+**`setIO(IOInterface $io): void`**
+- Set the Composer IO interface for logging
+
+**`setConfigClass(string $configClass): void`**
+- Set custom configuration class
+
+### AssetsConfig
+
+#### Static Methods
+
+**`getWebrootPath(): string`**
+- Get the base webroot path
+
+**`getPackages(): array`**
+- Get all supported packages and their configurations
+
+**`getPackageConfig(string $packageName): ?array`**
+- Get configuration for a specific package
+
+**`isSupportedPackage(string $packageName): bool`**
+- Check if a package is supported
+
+**`getSupportedPackages(): array`**
+- Get list of all supported package names
+
+### FileOperations
+
+#### Static Methods
+
+**`copyFile(string $source, string $destination): bool`**
+- Copy a single file with automatic directory creation
+
+**`copyMultipleFiles(string $sourceDir, string $destinationDir, array $files): array`**
+- Copy multiple files at once
+
+**`deleteFile(string $file): bool`**
+- Delete a file safely
+
+**`deleteMultipleFiles(string $directory, array $files): array`**
+- Delete multiple files at once
+
+**`normalizePath(string $path, bool $trailingSlash = true): string`**
+- Normalize path with proper separators
+
+**`joinPaths(string ...$segments): string`**
+- Join multiple path segments safely
 
 ## Requirements
 
 - PHP 8.1 or higher
 - CakePHP 4.0 or higher
 - Composer 2.0 or higher
+
+## Changelog
+
+### v2.0.0 (Improved Release)
+- Refactored with English naming conventions
+- Added `AssetsConfig` for external configuration
+- Added `FileOperations` utility class
+- Implemented proper exception handling
+- Added Composer IO interface for logging
+- Added comprehensive unit tests
+- Improved documentation
+
+### v1.0.0 (Initial Release)
+- Initial release with support for Bootstrap, Bootstrap Icons, and Popperjs
 
 ## License
 

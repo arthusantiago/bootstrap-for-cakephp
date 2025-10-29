@@ -3,64 +3,88 @@ declare(strict_types=1);
 
 namespace ArthuSantiago\BootstrapForCakePHP;
 
+use ArthuSantiago\BootstrapForCakePHP\Exception\FileOperationException;
+use ArthuSantiago\BootstrapForCakePHP\Exception\UnsupportedPackageException;
 use Composer\Installer\PackageEvent;
+use Composer\IO\IOInterface;
 use Composer\Script\Event;
 
 /**
- * Manages Bootstrap and Bootstrap Icons assets copying to CakePHP webroot
+ * Bootstrap Assets Manager for CakePHP
  *
- * This tool automatically copies Bootstrap, Bootstrap Icons, and Popperjs files
- * from vendor/ to the appropriate webroot/ directories when packages are installed
- * or updated via Composer.
+ * Automatically copies Bootstrap, Bootstrap Icons, and Popperjs assets to CakePHP webroot
+ * when packages are installed or updated via Composer.
+ *
+ * This class can be extended to customize asset paths or behavior.
+ *
+ * @example
+ * ```php
+ * // In your CakePHP composer.json
+ * "scripts": {
+ *     "post-install-cmd": [
+ *         "ArthuSantiago\\BootstrapForCakePHP\\BootstrapAssets::setupAssets"
+ *     ],
+ *     "post-update-cmd": [
+ *         "ArthuSantiago\\BootstrapForCakePHP\\BootstrapAssets::setupAssets"
+ *     ]
+ * }
+ * ```
  *
  * @see https://github.com/arthusantiago/bootstrap-for-cakephp
  */
 class BootstrapAssets
 {
     /**
-     * Bootstrap Icons CSS
+     * IO interface for output messages
+     *
+     * @var IOInterface|null
      */
-    private static string $cssOrigemBootstrapIcons = 'vendor/twbs/bootstrap-icons/font/bootstrap-icons.min.css';
-    private static string $cssDestinoBootstrapIcons = 'webroot/css/bootstrap-icons.min.css';
-    private static string $cssOrigemBootstrapIconsFonts = 'vendor/twbs/bootstrap-icons/font/fonts/';
-    private static string $cssDestinoBootstrapIconsFonts = 'webroot/css/fonts/';
+    protected static ?IOInterface $io = null;
 
     /**
-     * @var array Bootstrap Icons font files
+     * Assets configuration class
+     *
+     * @var string
      */
-    private static array $arquivosBootstrapIconsFonts = [
-        'bootstrap-icons.woff',
-        'bootstrap-icons.woff2',
-    ];
+    protected static string $configClass = AssetsConfig::class;
 
     /**
-     * Bootstrap dist files
+     * Set the IO interface for logging
+     *
+     * @param IOInterface $io
+     * @return void
      */
-    private static string $vendorBootstrap = 'vendor/twbs/bootstrap/dist/';
-    private static string $pathDestinoJS = 'webroot/js';
-    private static string $pathDestinoCSS = 'webroot/css';
+    public static function setIO(IOInterface $io): void
+    {
+        self::$io = $io;
+    }
 
     /**
-     * @var array Bootstrap CSS files to copy
+     * Set custom configuration class
+     *
+     * @param string $configClass Must extend AssetsConfig
+     * @return void
      */
-    private static array $fileDestinoBootstrapCSS = [
-        'bootstrap.min.css',
-        'bootstrap.min.css.map',
-    ];
+    public static function setConfigClass(string $configClass): void
+    {
+        self::$configClass = $configClass;
+    }
 
     /**
-     * @var array Bootstrap JS files to copy
+     * Write a message to output
+     *
+     * @param string $message
+     * @param int $verbosity
+     * @return void
      */
-    private static array $fileDestinoBootstrapJS = [
-        'bootstrap.min.js',
-        'bootstrap.min.js.map',
-    ];
-
-    /**
-     * Popperjs library
-     */
-    private static string $popperOrigem = 'vendor/popperjs/core/dist/umd/popper.min.js';
-    private static string $popperDestino = 'webroot/js/popper.min.js';
+    protected static function write(string $message, int $verbosity = IOInterface::NORMAL): void
+    {
+        if (self::$io !== null) {
+            self::$io->write($message, false, $verbosity);
+        } else {
+            echo $message . "\n";
+        }
+    }
 
     /**
      * Handle post-package installation event
@@ -70,8 +94,14 @@ class BootstrapAssets
      */
     public static function postPackageInstall(PackageEvent $event): void
     {
-        $nomePacote = $event->getOperation()->getPackage()->getName();
-        self::executar($nomePacote);
+        self::setIO($event->getIO());
+        $packageName = $event->getOperation()->getPackage()->getName();
+
+        try {
+            self::processPackage($packageName);
+        } catch (FileOperationException | UnsupportedPackageException $e) {
+            self::write("<error>{$e->getMessage()}</error>", IOInterface::QUIET);
+        }
     }
 
     /**
@@ -82,8 +112,14 @@ class BootstrapAssets
      */
     public static function postPackageUpdate(PackageEvent $event): void
     {
-        $nomePacote = $event->getOperation()->getTargetPackage()->getName();
-        self::executar($nomePacote);
+        self::setIO($event->getIO());
+        $packageName = $event->getOperation()->getTargetPackage()->getName();
+
+        try {
+            self::processPackage($packageName);
+        } catch (FileOperationException | UnsupportedPackageException $e) {
+            self::write("<error>{$e->getMessage()}</error>", IOInterface::QUIET);
+        }
     }
 
     /**
@@ -94,162 +130,103 @@ class BootstrapAssets
      * @param Event $event
      * @return void
      */
-    public static function executarCli(Event $event): void
+    public static function setupAssets(Event $event): void
     {
+        self::setIO($event->getIO());
         $arguments = $event->getArguments();
+
         if (empty($arguments)) {
-            echo "Usage: composer copy-bootstrap-assets <package-name> [<package-name>]\n";
+            $supported = implode(', ', self::$configClass::getSupportedPackages());
+            self::write(
+                "<info>Copying Bootstrap assets automatically for supported packages:</info>"
+            );
+            self::write("<info>Supported: {$supported}</info>");
+
+            foreach (self::$configClass::getSupportedPackages() as $packageName) {
+                try {
+                    self::processPackage($packageName);
+                } catch (FileOperationException | UnsupportedPackageException $e) {
+                    self::write("<comment>⚠ {$e->getMessage()}</comment>");
+                }
+            }
+
             return;
         }
 
-        foreach ($arguments as $pacote) {
-            self::executar($pacote);
+        self::write("<info>Copying assets for specified packages...</info>");
+
+        foreach ($arguments as $packageName) {
+            try {
+                self::processPackage($packageName);
+            } catch (FileOperationException | UnsupportedPackageException $e) {
+                self::write("<error>✗ {$e->getMessage()}</error>");
+            }
         }
     }
 
     /**
-     * Main method to handle asset copying for a specific package
+     * Process a package and copy its assets
      *
-     * @param string $nomePacote Package name (e.g., 'twbs/bootstrap')
+     * @param string $packageName
      * @return void
+     * @throws UnsupportedPackageException
+     * @throws FileOperationException
      */
-    public static function executar(string $nomePacote): void
+    public static function processPackage(string $packageName): void
     {
-        match ($nomePacote) {
-            'twbs/bootstrap-icons' => self::copiarBootstrapIcons(),
-            'twbs/bootstrap' => self::copiarBootstrap(),
-            'popperjs/core' => self::copiarPopper(),
-            default => null,
-        };
-    }
+        $config = self::$configClass::getPackageConfig($packageName);
 
-    /**
-     * Copy Bootstrap Icons CSS and fonts
-     *
-     * @return void
-     */
-    private static function copiarBootstrapIcons(): void
-    {
-        // Copy CSS file
-        self::excluiArquivo(self::$cssDestinoBootstrapIcons);
-        self::copiarArquivo(self::$cssOrigemBootstrapIcons, self::$cssDestinoBootstrapIcons);
-
-        // Copy font files
-        self::excluirMultiplosArquivo(self::$cssDestinoBootstrapIconsFonts, self::$arquivosBootstrapIconsFonts);
-        self::copiarMultiplosArquivo(
-            self::$cssOrigemBootstrapIconsFonts,
-            self::$cssDestinoBootstrapIconsFonts,
-            self::$arquivosBootstrapIconsFonts
-        );
-
-        echo "✅ Bootstrap Icons assets copied successfully\n";
-    }
-
-    /**
-     * Copy Bootstrap CSS and JS files
-     *
-     * @return void
-     */
-    private static function copiarBootstrap(): void
-    {
-        // Remove old files
-        self::excluirMultiplosArquivo(self::$pathDestinoCSS, self::$fileDestinoBootstrapCSS);
-        self::excluirMultiplosArquivo(self::$pathDestinoJS, self::$fileDestinoBootstrapJS);
-
-        // Copy new files
-        self::copiarMultiplosArquivo(
-            self::$vendorBootstrap . 'css/',
-            self::$pathDestinoCSS,
-            self::$fileDestinoBootstrapCSS
-        );
-
-        self::copiarMultiplosArquivo(
-            self::$vendorBootstrap . 'js/',
-            self::$pathDestinoJS,
-            self::$fileDestinoBootstrapJS
-        );
-
-        echo "✅ Bootstrap assets copied successfully\n";
-    }
-
-    /**
-     * Copy Popperjs library
-     *
-     * @return void
-     */
-    private static function copiarPopper(): void
-    {
-        self::excluiArquivo(self::$popperDestino);
-        self::copiarArquivo(self::$popperOrigem, self::$popperDestino);
-
-        echo "✅ Popperjs assets copied successfully\n";
-    }
-
-    /**
-     * Copy a single file
-     *
-     * @param string $arquivoOrigem Source file path
-     * @param string $arquivoDestino Destination file path
-     * @return bool True if file was copied, false otherwise
-     */
-    private static function copiarArquivo(string $arquivoOrigem, string $arquivoDestino): bool
-    {
-        if (!is_file($arquivoOrigem)) {
-            return false;
+        if ($config === null) {
+            throw new UnsupportedPackageException($packageName);
         }
 
-        // Ensure destination directory exists
-        $destDir = dirname($arquivoDestino);
-        if (!is_dir($destDir)) {
-            mkdir($destDir, 0755, true);
-        }
-
-        return copy($arquivoOrigem, $arquivoDestino);
+        self::copyPackageAssets($packageName, $config);
     }
 
     /**
-     * Copy multiple files
+     * Copy assets for a specific package
      *
-     * @param string $pathOrigem Source directory
-     * @param string $pathDestino Destination directory
-     * @param array $arquivos File names to copy
+     * @param string $packageName
+     * @param array $config Package configuration
      * @return void
+     * @throws FileOperationException
      */
-    private static function copiarMultiplosArquivo(string $pathOrigem, string $pathDestino, array $arquivos): void
+    protected static function copyPackageAssets(string $packageName, array $config): void
     {
-        foreach ($arquivos as $arquivo) {
-            $pathCompletoOrigem = $pathOrigem . $arquivo;
-            $pathCompletoDestino = $pathDestino . $arquivo;
-            self::copiarArquivo($pathCompletoOrigem, $pathCompletoDestino);
-        }
-    }
+        $webrootPath = self::$configClass::getWebrootPath();
+        $baseSource = $config['source'] ?? '';
+        $assets = $config['assets'] ?? [];
 
-    /**
-     * Delete a file
-     *
-     * @param string $arquivo File path
-     * @return bool True if deleted, false otherwise
-     */
-    private static function excluiArquivo(string $arquivo): bool
-    {
-        if (!is_file($arquivo)) {
-            return false;
-        }
+        foreach ($assets as $assetType => $assetConfig) {
+            $source = $assetConfig['source'] ?? ($baseSource . $assetType . DIRECTORY_SEPARATOR);
+            $destination = FileOperations::joinPaths(
+                $webrootPath,
+                $assetConfig['destination']
+            );
+            $files = $assetConfig['files'] ?? [];
 
-        return unlink($arquivo);
-    }
+            if (empty($files)) {
+                continue;
+            }
 
-    /**
-     * Delete multiple files
-     *
-     * @param string $pathArquivos Directory containing files
-     * @param array $arquivos File names to delete
-     * @return void
-     */
-    private static function excluirMultiplosArquivo(string $pathArquivos, array $arquivos): void
-    {
-        foreach ($arquivos as $arquivo) {
-            self::excluiArquivo($pathArquivos . $arquivo);
+            // Delete old files
+            FileOperations::deleteMultipleFiles($destination, $files);
+
+            // Copy new files
+            $results = FileOperations::copyMultipleFiles($source, $destination, $files);
+
+            $copied = count(array_filter($results));
+            $total = count($files);
+
+            if ($copied === $total) {
+                self::write(
+                    "<info>✓ {$packageName} ({$assetType}) - {$copied}/{$total} files copied</info>"
+                );
+            } else {
+                self::write(
+                    "<comment>⚠ {$packageName} ({$assetType}) - {$copied}/{$total} files copied</comment>"
+                );
+            }
         }
     }
 }
