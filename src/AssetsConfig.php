@@ -54,7 +54,7 @@ class AssetsConfig
                 'fonts' => [
                     'files' => ['bootstrap-icons.woff', 'bootstrap-icons.woff2'],
                     'source' => 'vendor/twbs/bootstrap-icons/font/fonts/',
-                    'destination' => 'css/fonts',
+                    'destination' => 'fonts/bootstrap-icons',
                 ],
             ],
         ],

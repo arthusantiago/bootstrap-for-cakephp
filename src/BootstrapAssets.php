@@ -228,5 +228,45 @@ class BootstrapAssets
                 );
             }
         }
+
+        // Fix Bootstrap Icons CSS font paths if needed
+        if ($packageName === 'twbs/bootstrap-icons') {
+            self::fixBootstrapIconsCssPaths($webrootPath);
+        }
+    }
+
+    /**
+     * Fix font paths in Bootstrap Icons CSS
+     * Changes relative paths from "fonts/" to "../fonts/" to match webroot structure
+     *
+     * @param string $webrootPath
+     * @return void
+     */
+    protected static function fixBootstrapIconsCssPaths(string $webrootPath): void
+    {
+        $cssFile = FileOperations::joinPaths($webrootPath, 'css', 'bootstrap-icons.min.css');
+
+        if (!file_exists($cssFile)) {
+            return;
+        }
+
+        $content = file_get_contents($cssFile);
+        if ($content === false) {
+            return;
+        }
+
+        // Replace "fonts/" with "../fonts/" in font-face url declarations
+        $updatedContent = preg_replace(
+            '/url\("fonts\/bootstrap-icons\.woff/',
+            'url("../fonts/bootstrap-icons/bootstrap-icons.woff',
+            $content
+        );
+
+        if ($updatedContent !== null && $updatedContent !== $content) {
+            file_put_contents($cssFile, $updatedContent);
+            self::write(
+                "<info>✓ Bootstrap Icons CSS font paths corrected</info>"
+            );
+        }
     }
 }
