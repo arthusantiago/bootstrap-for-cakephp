@@ -1,14 +1,28 @@
-# Composer
+# Composer dependencies
 vendor/
-composer.lock
 
-# IDE
+# IDE & Editor
 .vscode/
 .idea/
+.sublime-workspace
+.sublime-project
 *.swp
 *.swo
 *~
 .DS_Store
 
-# Testing
+# Testing & Coverage
+.phpunit.cache/
 .phpunit.result.cache
+coverage/
+build/
+
+# Logs & Temporary files
+*.log
+*.tmp
+*.pid
+
+# Environment variables (local)
+.env
+.env.local
+.env.*.local
