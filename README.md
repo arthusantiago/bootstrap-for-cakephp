@@ -105,8 +105,3 @@ Contributions are welcome! Please feel free to submit issues and pull requests t
 ## Support
 
 If you encounter any issues, please open an issue on the [GitHub repository](https://github.com/arthusantiago/bootstrap-for-cakephp/issues).
-
-## Changelog
-
-### v1.0.0 (Initial Release)
-- Initial release with support for Bootstrap, Bootstrap Icons, and Popperjs
