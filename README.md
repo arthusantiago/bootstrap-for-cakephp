@@ -13,10 +13,8 @@ Automatically copy [Bootstrap](https://getbootstrap.com/), [Bootstrap Icons](htt
 - ✨ Automatic copying of Popperjs library
 - 🚀 Works with Composer package install/update hooks
 - 🛠️ Manual CLI command for on-demand copying
-- 📦 Zero dependencies
 - ✅ Fully compatible with CakePHP 4.x and 5.x
 - 🔧 Customizable configuration and paths
-- ⚡ Proper error handling with typed exceptions
 - 📝 Comprehensive logging via Composer IO interface
 
 ## Installation
@@ -131,35 +129,6 @@ class CustomBootstrapAssets extends BootstrapAssets
 }
 ```
 
-## Error Handling
-
-The package includes proper exception handling:
-
-- **`BootstrapAssetsException`** - Base exception for all asset operations
-- **`UnsupportedPackageException`** - Thrown when trying to process unsupported packages
-- **`FileOperationException`** - Thrown when file copy/delete operations fail
-
-```php
-use ArthuSantiago\BootstrapForCakePHP\Exception\FileOperationException;
-use ArthuSantiago\BootstrapForCakePHP\Exception\UnsupportedPackageException;
-
-try {
-    BootstrapAssets::processPackage('twbs/bootstrap');
-} catch (UnsupportedPackageException $e) {
-    // Handle unsupported package
-} catch (FileOperationException $e) {
-    // Handle file operation error
-}
-```
-
-## Testing
-
-The package includes comprehensive unit tests using PHPUnit 10+. Tests cover:
-- File operations (copy, delete, path utilities)
-- Configuration management and package detection
-- Exception handling
-- Asset copying logic
-
 ### Running Tests
 
 First, install development dependencies:
@@ -190,109 +159,11 @@ vendor/bin/phpunit --filter testCopyFileShouldCopyFileSuccessfully
 vendor/bin/phpunit --testsuite "Bootstrap Assets Test Suite"
 ```
 
-### Test Results
-
-All 22 tests pass successfully:
-
-```
-PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
-
-Tests: 22, Assertions: 35
-Time: 0.008s, Memory: 8.00 MB
-
-Status: OK
-```
-
-### Test Coverage
-
-**AssetsConfigTest** (12 tests)
-- Configuration retrieval and validation
-- Package support detection
-- Package configuration management
-
-**FileOperationsTest** (10 tests)
-- Single and multiple file copying
-- File deletion with error handling
-- Path normalization and joining
-- Automatic directory creation
-- Exception handling for file operations
-
-## API Reference
-
-### BootstrapAssets
-
-#### Static Methods
-
-**`processPackage(string $packageName): void`**
-- Process a specific package and copy its assets
-- Throws `UnsupportedPackageException` if package is not supported
-
-**`setIO(IOInterface $io): void`**
-- Set the Composer IO interface for logging
-
-**`setConfigClass(string $configClass): void`**
-- Set custom configuration class
-
-### AssetsConfig
-
-#### Static Methods
-
-**`getWebrootPath(): string`**
-- Get the base webroot path
-
-**`getPackages(): array`**
-- Get all supported packages and their configurations
-
-**`getPackageConfig(string $packageName): ?array`**
-- Get configuration for a specific package
-
-**`isSupportedPackage(string $packageName): bool`**
-- Check if a package is supported
-
-**`getSupportedPackages(): array`**
-- Get list of all supported package names
-
-### FileOperations
-
-#### Static Methods
-
-**`copyFile(string $source, string $destination): bool`**
-- Copy a single file with automatic directory creation
-
-**`copyMultipleFiles(string $sourceDir, string $destinationDir, array $files): array`**
-- Copy multiple files at once
-
-**`deleteFile(string $file): bool`**
-- Delete a file safely
-
-**`deleteMultipleFiles(string $directory, array $files): array`**
-- Delete multiple files at once
-
-**`normalizePath(string $path, bool $trailingSlash = true): string`**
-- Normalize path with proper separators
-
-**`joinPaths(string ...$segments): string`**
-- Join multiple path segments safely
-
 ## Requirements
 
 - PHP 8.1 or higher
 - CakePHP 4.0 or higher
 - Composer 2.0 or higher
-
-## Changelog
-
-### v2.0.0 (Improved Release)
-- Refactored with English naming conventions
-- Added `AssetsConfig` for external configuration
-- Added `FileOperations` utility class
-- Implemented proper exception handling
-- Added Composer IO interface for logging
-- Added comprehensive unit tests
-- Improved documentation
-
-### v1.0.0 (Initial Release)
-- Initial release with support for Bootstrap, Bootstrap Icons, and Popperjs
 
 ## License
 
