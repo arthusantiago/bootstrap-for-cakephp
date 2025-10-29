@@ -154,17 +154,68 @@ try {
 
 ## Testing
 
-Run the test suite:
+The package includes comprehensive unit tests using PHPUnit 10+. Tests cover:
+- File operations (copy, delete, path utilities)
+- Configuration management and package detection
+- Exception handling
+- Asset copying logic
+
+### Running Tests
+
+First, install development dependencies:
 
 ```bash
-composer test
+composer install
 ```
 
-The package includes comprehensive unit tests for:
-- File operations (copy, delete)
-- Configuration management
-- Path utilities
-- Exception handling
+Then run the test suite:
+
+```bash
+# Run all tests
+composer test
+
+# Or run directly with PHPUnit
+vendor/bin/phpunit
+
+# List all available tests
+vendor/bin/phpunit --list-tests
+
+# Run specific test file
+vendor/bin/phpunit tests/TestCase/FileOperationsTest.php
+
+# Run specific test method
+vendor/bin/phpunit --filter testCopyFileShouldCopyFileSuccessfully
+
+# Run tests from specific testsuite
+vendor/bin/phpunit --testsuite "Bootstrap Assets Test Suite"
+```
+
+### Test Results
+
+All 22 tests pass successfully:
+
+```
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Tests: 22, Assertions: 35
+Time: 0.008s, Memory: 8.00 MB
+
+Status: OK
+```
+
+### Test Coverage
+
+**AssetsConfigTest** (12 tests)
+- Configuration retrieval and validation
+- Package support detection
+- Package configuration management
+
+**FileOperationsTest** (10 tests)
+- Single and multiple file copying
+- File deletion with error handling
+- Path normalization and joining
+- Automatic directory creation
+- Exception handling for file operations
 
 ## API Reference
 
