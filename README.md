@@ -71,33 +71,6 @@ composer copy-bootstrap-assets twbs/bootstrap-icons
 composer copy-bootstrap-assets popperjs/core
 ```
 
-## Template Integration
-
-In your CakePHP templates, reference the copied assets:
-
-```html
-<!-- Bootstrap CSS -->
-<link rel="stylesheet" href="<?= BASE . 'css/bootstrap.min.css' ?>">
-
-<!-- Bootstrap Icons -->
-<link rel="stylesheet" href="<?= BASE . 'css/bootstrap-icons.min.css' ?>">
-
-<!-- Popperjs (required for Bootstrap dropdowns/tooltips) -->
-<script src="<?= BASE . 'js/popper.min.js' ?>"></script>
-
-<!-- Bootstrap JS -->
-<script src="<?= BASE . 'js/bootstrap.min.js' ?>"></script>
-```
-
-Or using the `Html` helper:
-
-```php
-<?= $this->Html->css('bootstrap.min.css') ?>
-<?= $this->Html->css('bootstrap-icons.min.css') ?>
-<?= $this->Html->script('popper.min.js') ?>
-<?= $this->Html->script('bootstrap.min.js') ?>
-```
-
 ## Advanced Usage
 
 ### Customizing Asset Paths

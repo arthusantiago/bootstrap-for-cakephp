@@ -4,7 +4,6 @@
          bootstrap="tests/bootstrap.php"
          colors="true"
          beStrictAboutOutputDuringTests="true"
-         beStrictAboutTestSize="true"
          failOnRisky="true"
          failOnWarning="true"
          cacheDirectory=".phpunit.cache">
@@ -13,15 +12,6 @@
             <directory>tests/TestCase/</directory>
         </testsuite>
     </testsuites>
-
-    <coverage processUncoveredFiles="true">
-        <include>
-            <directory suffix=".php">src</directory>
-        </include>
-        <report>
-            <html outputDirectory="coverage"/>
-        </report>
-    </coverage>
 
     <php>
         <ini name="error_reporting" value="-1"/>
