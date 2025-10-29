@@ -142,7 +142,7 @@ class BootstrapAssets
             self::$arquivosBootstrapIconsFonts
         );
 
-        echo "✓ Bootstrap Icons assets copied successfully\n";
+        echo "✅ Bootstrap Icons assets copied successfully\n";
     }
 
     /**
@@ -169,7 +169,7 @@ class BootstrapAssets
             self::$fileDestinoBootstrapJS
         );
 
-        echo "✓ Bootstrap assets copied successfully\n";
+        echo "✅ Bootstrap assets copied successfully\n";
     }
 
     /**
@@ -182,7 +182,7 @@ class BootstrapAssets
         self::excluiArquivo(self::$popperDestino);
         self::copiarArquivo(self::$popperOrigem, self::$popperDestino);
 
-        echo "✓ Popperjs assets copied successfully\n";
+        echo "✅ Popperjs assets copied successfully\n";
     }
 
     /**
