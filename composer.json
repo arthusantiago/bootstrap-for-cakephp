@@ -1,6 +1,6 @@
 {
   "name": "arthusantiago/bootstrap-for-cakephp",
-  "description": "Automatically copy Bootstrap, Bootstrap Icons, and Popperjs assets to CakePHP webroot directory",
+  "description": "Automatically copy Bootstrap and Bootstrap Icons assets to CakePHP webroot directory",
   "type": "library",
   "license": "MIT",
   "authors": [
@@ -19,7 +19,6 @@
     "cakephp",
     "bootstrap",
     "bootstrap-icons",
-    "popperjs",
     "assets",
     "composer"
   ],

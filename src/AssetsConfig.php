@@ -58,15 +58,6 @@ class AssetsConfig
                 ],
             ],
         ],
-        'popperjs/core' => [
-            'source' => 'vendor/popperjs/core/dist/umd/',
-            'assets' => [
-                'js' => [
-                    'files' => ['popper.min.js'],
-                    'destination' => 'js',
-                ],
-            ],
-        ],
     ];
 
     /**

@@ -37,13 +37,6 @@ class AssetsConfigTest extends TestCase
         $this->assertContains('twbs/bootstrap-icons', $packages);
     }
 
-    public function testGetSupportedPackagesShouldContainPopperjs(): void
-    {
-        $packages = AssetsConfig::getSupportedPackages();
-
-        $this->assertContains('popperjs/core', $packages);
-    }
-
     public function testIsSupportedPackageShouldReturnTrueForBootstrap(): void
     {
         $result = AssetsConfig::isSupportedPackage('twbs/bootstrap');

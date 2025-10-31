@@ -12,7 +12,7 @@ use Composer\Script\Event;
 /**
  * Bootstrap Assets Manager for CakePHP
  *
- * Automatically copies Bootstrap, Bootstrap Icons, and Popperjs assets to CakePHP webroot
+ * Automatically copies Bootstrap and Bootstrap Icons assets to CakePHP webroot
  * when packages are installed or updated via Composer.
  *
  * This class can be extended to customize asset paths or behavior.
