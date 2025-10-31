@@ -80,7 +80,7 @@ class BootstrapAssets
     protected static function write(string $message, int $verbosity = IOInterface::NORMAL): void
     {
         if (self::$io !== null) {
-            self::$io->write($message, false, $verbosity);
+            self::$io->write($message . "\n", false, $verbosity);
         } else {
             echo $message . "\n";
         }
@@ -137,10 +137,7 @@ class BootstrapAssets
 
         if (empty($arguments)) {
             $supported = implode(', ', self::$configClass::getSupportedPackages());
-            self::write(
-                "<info>Copying Bootstrap assets automatically for supported packages:</info>"
-            );
-            self::write("<info>Supported: {$supported}</info>");
+            self::write("<info>Copying Bootstrap assets automatically for supported packages: $supported</info>");
 
             foreach (self::$configClass::getSupportedPackages() as $packageName) {
                 try {
