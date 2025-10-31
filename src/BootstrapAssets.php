@@ -125,7 +125,7 @@ class BootstrapAssets
     /**
      * CLI command handler for manual asset copying
      *
-     * Usage: composer copy-bootstrap-assets twbs/bootstrap twbs/bootstrap-icons popperjs/core
+     * Usage: composer copy-bootstrap-assets twbs/bootstrap twbs/bootstrap-icons
      *
      * @param Event $event
      * @return void
