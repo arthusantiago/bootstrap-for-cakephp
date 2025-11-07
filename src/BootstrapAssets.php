@@ -223,12 +223,49 @@ class BootstrapAssets
                 self::write(
                     "<comment>⚠ {$packageName} ({$assetType}) - {$copied}/{$total} files copied</comment>"
                 );
+
+                // Display which files failed
+                self::displayFailedFiles($results, $source, $packageName, $assetType);
             }
         }
 
         // Fix Bootstrap Icons CSS font paths if needed
         if ($packageName === 'twbs/bootstrap-icons') {
             self::fixBootstrapIconsCssPaths($webrootPath);
+        }
+    }
+
+    /**
+     * Display failed files in CLI output
+     *
+     * @param array $results Array of [filename => success]
+     * @param string $sourceDir Source directory path
+     * @param string $packageName Package name
+     * @param string $assetType Asset type (css, js, fonts, etc.)
+     * @return void
+     */
+    protected static function displayFailedFiles(array $results, string $sourceDir, string $packageName, string $assetType): void
+    {
+        $failedFiles = array_filter($results, static fn($success) => !$success);
+
+        if (empty($failedFiles)) {
+            return;
+        }
+
+        foreach (array_keys($failedFiles) as $file) {
+            $sourceFile = rtrim($sourceDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
+
+            if (!file_exists($sourceFile)) {
+                self::write(
+                    "<error>✗ {$packageName} ({$assetType}): File not found - {$sourceFile}</error>",
+                    IOInterface::QUIET
+                );
+            } else {
+                self::write(
+                    "<error>✗ {$packageName} ({$assetType}): Failed to copy - {$file}</error>",
+                    IOInterface::QUIET
+                );
+            }
         }
     }
 

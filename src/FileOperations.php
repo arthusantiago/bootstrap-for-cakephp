@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArthuSantiago\BootstrapForCakePHP;
 
 use ArthuSantiago\BootstrapForCakePHP\Exception\FileOperationException;
+use ArthuSantiago\BootstrapForCakePHP\Logger;
 
 /**
  * Utility class for file operations
@@ -25,24 +26,24 @@ class FileOperations
     public static function copyFile(string $source, string $destination): bool
     {
         if (!is_file($source)) {
-            throw new FileOperationException(
-                "Source file not found: {$source}"
-            );
+            $errorMessage = "Source file not found: {$source}";
+            Logger::error($errorMessage);
+            throw new FileOperationException($errorMessage);
         }
 
         $destinationDir = dirname($destination);
         if (!is_dir($destinationDir)) {
             if (!mkdir($destinationDir, 0755, true)) {
-                throw new FileOperationException(
-                    "Failed to create destination directory: {$destinationDir}"
-                );
+                $errorMessage = "Failed to create destination directory: {$destinationDir}";
+                Logger::error($errorMessage);
+                throw new FileOperationException($errorMessage);
             }
         }
 
         if (!copy($source, $destination)) {
-            throw new FileOperationException(
-                "Failed to copy file from {$source} to {$destination}"
-            );
+            $errorMessage = "Failed to copy file from {$source} to {$destination}";
+            Logger::error($errorMessage);
+            throw new FileOperationException($errorMessage);
         }
 
         return true;
@@ -78,6 +79,9 @@ class FileOperations
                 self::copyFile($sourcePath, $destinationPath);
                 $results[$file] = true;
             } catch (FileOperationException $e) {
+                // Log with more context about what went wrong
+                $errorMsg = $e->getMessage();
+                Logger::error("File copy failed for {$file}: {$errorMsg} (Source: {$sourcePath})");
                 $results[$file] = false;
             }
         }
@@ -99,9 +103,9 @@ class FileOperations
         }
 
         if (!unlink($file)) {
-            throw new FileOperationException(
-                "Failed to delete file: {$file}"
-            );
+            $errorMessage = "Failed to delete file: {$file}";
+            Logger::error($errorMessage);
+            throw new FileOperationException($errorMessage);
         }
 
         return true;
@@ -130,6 +134,9 @@ class FileOperations
             try {
                 $results[$file] = self::deleteFile($filePath);
             } catch (FileOperationException $e) {
+                // Log with more context about what went wrong
+                $errorMsg = $e->getMessage();
+                Logger::error("File deletion failed for {$file}: {$errorMsg} (Path: {$filePath})");
                 $results[$file] = false;
             }
         }
