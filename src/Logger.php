@@ -24,6 +24,11 @@ class Logger
     private static string $logFile = 'logs/bootstrapForCakephp.log';
 
     /**
+     * Custom project root (for testing purposes)
+     */
+    private static ?string $customProjectRoot = null;
+
+    /**
      * Whether to initialize logs directory
      */
     private static bool $initialized = false;
@@ -39,7 +44,9 @@ class Logger
             return;
         }
 
-        $logDir = dirname(self::$logFile);
+        // Get the full path to the log file to create parent directories
+        $logPath = self::getLogPath();
+        $logDir = dirname($logPath);
 
         if (!is_dir($logDir)) {
             @mkdir($logDir, 0755, true);
@@ -58,6 +65,11 @@ class Logger
      */
     private static function findProjectRoot(): string
     {
+        // Return custom project root if set (useful for testing)
+        if (self::$customProjectRoot !== null) {
+            return self::$customProjectRoot;
+        }
+
         // Start from the vendor directory (two levels up from this file)
         // src/Logger.php -> vendor/arthu-santiago/bootstrap-for-cakephp/src/
         $startDir = dirname(dirname(dirname(__DIR__))) . DIRECTORY_SEPARATOR . 'vendor';
@@ -177,5 +189,29 @@ class Logger
     public static function getLogFile(): string
     {
         return self::getLogPath();
+    }
+
+    /**
+     * Set custom project root (mainly for testing purposes)
+     *
+     * @param string|null $projectRoot Project root directory or null to reset
+     * @return void
+     */
+    public static function setProjectRoot(?string $projectRoot): void
+    {
+        self::$customProjectRoot = $projectRoot;
+        self::$initialized = false;
+    }
+
+    /**
+     * Reset logger to default state
+     *
+     * @return void
+     */
+    public static function reset(): void
+    {
+        self::$logFile = 'logs/bootstrapForCakephp.log';
+        self::$customProjectRoot = null;
+        self::$initialized = false;
     }
 }
