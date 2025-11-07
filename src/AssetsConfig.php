@@ -49,6 +49,7 @@ class AssetsConfig
             'assets' => [
                 'css' => [
                     'files' => ['bootstrap-icons.min.css'],
+                    'source' => 'vendor/twbs/bootstrap-icons/font/',
                     'destination' => 'css',
                 ],
                 'fonts' => [
