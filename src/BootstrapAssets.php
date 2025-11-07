@@ -206,16 +206,16 @@ class BootstrapAssets
                 continue;
             }
 
-            // Delete old files
-            FileOperations::deleteMultipleFiles($destination, $files);
-
-            // Copy new files
+            // Copy new files FIRST (preserve old files if copy fails)
             $results = FileOperations::copyMultipleFiles($source, $destination, $files);
 
             $copied = count(array_filter($results));
             $total = count($files);
 
             if ($copied === $total) {
+                // All files copied successfully, now delete old files
+                FileOperations::deleteMultipleFiles($destination, $files);
+
                 self::write(
                     "<info>✓ {$packageName} ({$assetType}) - {$copied}/{$total} files copied</info>"
                 );
@@ -226,6 +226,12 @@ class BootstrapAssets
 
                 // Display which files failed
                 self::displayFailedFiles($results, $source, $packageName, $assetType);
+
+                // Log warning: some files failed to copy, keeping old files
+                Logger::warning(
+                    "{$packageName} ({$assetType}): Partial copy failed, keeping old files. "
+                    . "Failed: " . implode(', ', array_keys(array_filter($results, static fn($v) => !$v)))
+                );
             }
         }
 

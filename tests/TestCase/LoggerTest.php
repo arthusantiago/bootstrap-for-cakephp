@@ -313,4 +313,64 @@ class LoggerTest extends TestCase
             $this->fail('Logger should handle errors gracefully: ' . $e->getMessage());
         }
     }
+
+    public function testLoggerShouldPreserveOldFilesIfCopyFails(): void
+    {
+        $sourceDir = $this->testProjectRoot . DIRECTORY_SEPARATOR . 'source';
+        $destDir = $this->testProjectRoot . DIRECTORY_SEPARATOR . 'dest';
+
+        mkdir($sourceDir, 0755, true);
+        mkdir($destDir, 0755, true);
+
+        // Create an old file in destination
+        $oldFile = $destDir . DIRECTORY_SEPARATOR . 'bootstrap.min.css';
+        file_put_contents($oldFile, 'old content');
+        $this->assertTrue(file_exists($oldFile));
+
+        // Try to copy from non-existent source
+        // This simulates the scenario where:
+        // 1. Old file exists in project
+        // 2. Copy fails (source not found)
+        // 3. Old file should be preserved
+        FileOperations::copyMultipleFiles(
+            $sourceDir,
+            $destDir,
+            ['bootstrap.min.css']
+        );
+
+        // Old file should still exist (not deleted by copy failure)
+        $this->assertTrue(file_exists($oldFile));
+        $this->assertEquals('old content', file_get_contents($oldFile));
+
+        // Error should be logged
+        $logContents = file_get_contents($this->testLogFile);
+        $this->assertStringContainsString('[ERROR]', $logContents);
+    }
+
+    public function testLoggerShouldLogWarningWhenPartialCopyFails(): void
+    {
+        $sourceDir = $this->testProjectRoot . DIRECTORY_SEPARATOR . 'source';
+        $destDir = $this->testProjectRoot . DIRECTORY_SEPARATOR . 'dest';
+
+        mkdir($sourceDir, 0755, true);
+        mkdir($destDir, 0755, true);
+
+        // Create one existing file
+        file_put_contents($sourceDir . DIRECTORY_SEPARATOR . 'existing.css', 'content');
+
+        // Try to copy both existing and non-existing files
+        FileOperations::copyMultipleFiles(
+            $sourceDir,
+            $destDir,
+            ['existing.css', 'missing.css']
+        );
+
+        $logContents = file_get_contents($this->testLogFile);
+
+        // Should log errors for missing file
+        $this->assertStringContainsString('[ERROR]', $logContents);
+
+        // Successful file should still be copied
+        $this->assertTrue(file_exists($destDir . DIRECTORY_SEPARATOR . 'existing.css'));
+    }
 }
