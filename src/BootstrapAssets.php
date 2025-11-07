@@ -206,22 +206,58 @@ class BootstrapAssets
                 continue;
             }
 
-            // Delete old files
-            FileOperations::deleteMultipleFiles($destination, $files);
+            // Use atomic swap strategy: copy to temp directory first
+            $tempDestination = $destination . '.tmp-' . uniqid();
 
-            // Copy new files
-            $results = FileOperations::copyMultipleFiles($source, $destination, $files);
+            // Create temp directory
+            if (!is_dir($tempDestination)) {
+                mkdir($tempDestination, 0755, true);
+            }
+
+            // Copy new files to temporary location
+            $results = FileOperations::copyMultipleFiles($source, $tempDestination, $files);
 
             $copied = count(array_filter($results));
             $total = count($files);
 
             if ($copied === $total) {
+                // All files copied successfully - safe to swap
+                // 1. Delete old files from destination
+                FileOperations::deleteMultipleFiles($destination, $files);
+
+                // 2. Move new files from temp to destination
+                foreach ($files as $file) {
+                    $tempFile = rtrim($tempDestination, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
+                    $destFile = rtrim($destination, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
+
+                    if (file_exists($tempFile)) {
+                        rename($tempFile, $destFile);
+                    }
+                }
+
+                // 3. Clean up temp directory
+                @rmdir($tempDestination);
+
                 self::write(
                     "<info>✓ {$packageName} ({$assetType}) - {$copied}/{$total} files copied</info>"
                 );
+
+                Logger::info("{$packageName} ({$assetType}): Successfully copied {$copied}/{$total} files");
             } else {
+                // Copy failed - clean up temp directory and keep old files intact
+                self::cleanupDirectory($tempDestination);
+
                 self::write(
                     "<comment>⚠ {$packageName} ({$assetType}) - {$copied}/{$total} files copied</comment>"
+                );
+
+                // Display which files failed
+                self::displayFailedFiles($results, $source, $packageName, $assetType);
+
+                // Log warning: some files failed to copy, keeping old files
+                Logger::warning(
+                    "{$packageName} ({$assetType}): Partial copy failed, keeping old files. "
+                    . "Failed: " . implode(', ', array_keys(array_filter($results, static fn($v) => !$v)))
                 );
             }
         }
@@ -229,6 +265,68 @@ class BootstrapAssets
         // Fix Bootstrap Icons CSS font paths if needed
         if ($packageName === 'twbs/bootstrap-icons') {
             self::fixBootstrapIconsCssPaths($webrootPath);
+        }
+    }
+
+    /**
+     * Clean up a directory recursively
+     *
+     * @param string $dir Directory path to clean up
+     * @return void
+     */
+    protected static function cleanupDirectory(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        foreach (scandir($dir) as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $path = $dir . DIRECTORY_SEPARATOR . $item;
+            if (is_dir($path)) {
+                self::cleanupDirectory($path);
+            } else {
+                @unlink($path);
+            }
+        }
+
+        @rmdir($dir);
+    }
+
+    /**
+     * Display failed files in CLI output
+     *
+     * @param array $results Array of [filename => success]
+     * @param string $sourceDir Source directory path
+     * @param string $packageName Package name
+     * @param string $assetType Asset type (css, js, fonts, etc.)
+     * @return void
+     */
+    protected static function displayFailedFiles(array $results, string $sourceDir, string $packageName, string $assetType): void
+    {
+        $failedFiles = array_filter($results, static fn($success) => !$success);
+
+        if (empty($failedFiles)) {
+            return;
+        }
+
+        foreach (array_keys($failedFiles) as $file) {
+            $sourceFile = rtrim($sourceDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
+
+            if (!file_exists($sourceFile)) {
+                self::write(
+                    "<error>✗ {$packageName} ({$assetType}): File not found - {$sourceFile}</error>",
+                    IOInterface::QUIET
+                );
+            } else {
+                self::write(
+                    "<error>✗ {$packageName} ({$assetType}): Failed to copy - {$file}</error>",
+                    IOInterface::QUIET
+                );
+            }
         }
     }
 
