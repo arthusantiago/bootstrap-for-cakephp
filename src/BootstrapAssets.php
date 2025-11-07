@@ -206,20 +206,47 @@ class BootstrapAssets
                 continue;
             }
 
-            // Copy new files FIRST (preserve old files if copy fails)
-            $results = FileOperations::copyMultipleFiles($source, $destination, $files);
+            // Use atomic swap strategy: copy to temp directory first
+            $tempDestination = $destination . '.tmp-' . uniqid();
+
+            // Create temp directory
+            if (!is_dir($tempDestination)) {
+                mkdir($tempDestination, 0755, true);
+            }
+
+            // Copy new files to temporary location
+            $results = FileOperations::copyMultipleFiles($source, $tempDestination, $files);
 
             $copied = count(array_filter($results));
             $total = count($files);
 
             if ($copied === $total) {
-                // All files copied successfully, now delete old files
+                // All files copied successfully - safe to swap
+                // 1. Delete old files from destination
                 FileOperations::deleteMultipleFiles($destination, $files);
+
+                // 2. Move new files from temp to destination
+                foreach ($files as $file) {
+                    $tempFile = rtrim($tempDestination, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
+                    $destFile = rtrim($destination, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
+
+                    if (file_exists($tempFile)) {
+                        rename($tempFile, $destFile);
+                    }
+                }
+
+                // 3. Clean up temp directory
+                @rmdir($tempDestination);
 
                 self::write(
                     "<info>✓ {$packageName} ({$assetType}) - {$copied}/{$total} files copied</info>"
                 );
+
+                Logger::info("{$packageName} ({$assetType}): Successfully copied {$copied}/{$total} files");
             } else {
+                // Copy failed - clean up temp directory and keep old files intact
+                self::cleanupDirectory($tempDestination);
+
                 self::write(
                     "<comment>⚠ {$packageName} ({$assetType}) - {$copied}/{$total} files copied</comment>"
                 );
@@ -239,6 +266,34 @@ class BootstrapAssets
         if ($packageName === 'twbs/bootstrap-icons') {
             self::fixBootstrapIconsCssPaths($webrootPath);
         }
+    }
+
+    /**
+     * Clean up a directory recursively
+     *
+     * @param string $dir Directory path to clean up
+     * @return void
+     */
+    protected static function cleanupDirectory(string $dir): void
+    {
+        if (!is_dir($dir)) {
+            return;
+        }
+
+        foreach (scandir($dir) as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $path = $dir . DIRECTORY_SEPARATOR . $item;
+            if (is_dir($path)) {
+                self::cleanupDirectory($path);
+            } else {
+                @unlink($path);
+            }
+        }
+
+        @rmdir($dir);
     }
 
     /**
