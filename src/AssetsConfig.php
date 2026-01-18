@@ -27,6 +27,7 @@ class AssetsConfig
 
     /**
      * Supported packages and their asset definitions
+     * 'filePermission' It's optional.
      *
      * @var array<string, array{source: string, files: array<string>, destination: string}>
      */
@@ -37,10 +38,12 @@ class AssetsConfig
                 'css' => [
                     'files' => ['bootstrap.min.css', 'bootstrap.min.css.map'],
                     'destination' => 'css',
+                    'filePermission' => 0750,
                 ],
                 'js' => [
                     'files' => ['bootstrap.min.js', 'bootstrap.min.js.map'],
                     'destination' => 'js',
+                    'filePermission' => 0750,
                 ],
             ],
         ],
@@ -51,11 +54,13 @@ class AssetsConfig
                     'files' => ['bootstrap-icons.min.css'],
                     'source' => 'vendor/twbs/bootstrap-icons/font/',
                     'destination' => 'css',
+                    'filePermission' => 0750,
                 ],
                 'fonts' => [
                     'files' => ['bootstrap-icons.woff', 'bootstrap-icons.woff2'],
                     'source' => 'vendor/twbs/bootstrap-icons/font/fonts/',
                     'destination' => 'fonts/bootstrap-icons',
+                    'filePermission' => 0750,
                 ],
             ],
         ],

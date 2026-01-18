@@ -159,4 +159,127 @@ class FileOperationsTest extends TestCase
 
         $this->assertFalse(str_contains($path, DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR));
     }
+
+    public function testCopyFileShouldApplyDefaultPermissionsWhenNotSpecified(): void
+    {
+        $sourceDir = $this->tmpDir . DIRECTORY_SEPARATOR . 'source';
+        $destDir = $this->tmpDir . DIRECTORY_SEPARATOR . 'dest';
+        mkdir($sourceDir);
+
+        $sourceFile = $sourceDir . DIRECTORY_SEPARATOR . 'test.txt';
+        $destFile = $destDir . DIRECTORY_SEPARATOR . 'test.txt';
+
+        file_put_contents($sourceFile, 'test content');
+
+        // Copy without specifying permissions (should use default 0750)
+        FileOperations::copyFile($sourceFile, $destFile);
+
+        $this->assertFileExists($destFile);
+
+        // Get file permissions
+        $perms = fileperms($destFile) & 0777;
+
+        // Verify default permissions (0750)
+        $this->assertEquals(0750, $perms, sprintf(
+            'Expected permissions 0750, got %04o',
+            $perms
+        ));
+    }
+
+    public function testCopyFileShouldApplyCustomPermissionsWhenSpecified(): void
+    {
+        $sourceDir = $this->tmpDir . DIRECTORY_SEPARATOR . 'source';
+        $destDir = $this->tmpDir . DIRECTORY_SEPARATOR . 'dest';
+        mkdir($sourceDir);
+
+        $sourceFile = $sourceDir . DIRECTORY_SEPARATOR . 'test.txt';
+        $destFile = $destDir . DIRECTORY_SEPARATOR . 'test.txt';
+
+        file_put_contents($sourceFile, 'test content');
+
+        // Copy with custom permissions (0644)
+        FileOperations::copyFile($sourceFile, $destFile, 0644);
+
+        $this->assertFileExists($destFile);
+
+        // Get file permissions
+        $perms = fileperms($destFile) & 0777;
+
+        // Verify custom permissions (0644)
+        $this->assertEquals(0644, $perms, sprintf(
+            'Expected permissions 0644, got %04o',
+            $perms
+        ));
+    }
+
+    public function testCopyMultipleFilesShouldApplyDefaultPermissionsWhenNotSpecified(): void
+    {
+        $sourceDir = $this->tmpDir . DIRECTORY_SEPARATOR . 'source';
+        $destDir = $this->tmpDir . DIRECTORY_SEPARATOR . 'dest';
+        mkdir($sourceDir);
+        mkdir($destDir);
+
+        // Create source files
+        file_put_contents($sourceDir . DIRECTORY_SEPARATOR . 'file1.txt', 'content1');
+        file_put_contents($sourceDir . DIRECTORY_SEPARATOR . 'file2.txt', 'content2');
+
+        // Copy without specifying permissions
+        $results = FileOperations::copyMultipleFiles(
+            $sourceDir,
+            $destDir,
+            ['file1.txt', 'file2.txt']
+        );
+
+        $this->assertTrue($results['file1.txt']);
+        $this->assertTrue($results['file2.txt']);
+
+        // Verify permissions for both files (should be 0750)
+        $file1Perms = fileperms($destDir . DIRECTORY_SEPARATOR . 'file1.txt') & 0777;
+        $file2Perms = fileperms($destDir . DIRECTORY_SEPARATOR . 'file2.txt') & 0777;
+
+        $this->assertEquals(0750, $file1Perms, sprintf(
+            'Expected permissions 0750 for file1.txt, got %04o',
+            $file1Perms
+        ));
+        $this->assertEquals(0750, $file2Perms, sprintf(
+            'Expected permissions 0750 for file2.txt, got %04o',
+            $file2Perms
+        ));
+    }
+
+    public function testCopyMultipleFilesShouldApplyCustomPermissionsWhenSpecified(): void
+    {
+        $sourceDir = $this->tmpDir . DIRECTORY_SEPARATOR . 'source';
+        $destDir = $this->tmpDir . DIRECTORY_SEPARATOR . 'dest';
+        mkdir($sourceDir);
+        mkdir($destDir);
+
+        // Create source files
+        file_put_contents($sourceDir . DIRECTORY_SEPARATOR . 'file1.txt', 'content1');
+        file_put_contents($sourceDir . DIRECTORY_SEPARATOR . 'file2.txt', 'content2');
+
+        // Copy with custom permissions (0600)
+        $results = FileOperations::copyMultipleFiles(
+            $sourceDir,
+            $destDir,
+            ['file1.txt', 'file2.txt'],
+            0600
+        );
+
+        $this->assertTrue($results['file1.txt']);
+        $this->assertTrue($results['file2.txt']);
+
+        // Verify permissions for both files (should be 0600)
+        $file1Perms = fileperms($destDir . DIRECTORY_SEPARATOR . 'file1.txt') & 0777;
+        $file2Perms = fileperms($destDir . DIRECTORY_SEPARATOR . 'file2.txt') & 0777;
+
+        $this->assertEquals(0600, $file1Perms, sprintf(
+            'Expected permissions 0600 for file1.txt, got %04o',
+            $file1Perms
+        ));
+        $this->assertEquals(0600, $file2Perms, sprintf(
+            'Expected permissions 0600 for file2.txt, got %04o',
+            $file2Perms
+        ));
+    }
 }

@@ -20,10 +20,11 @@ class FileOperations
      *
      * @param string $source Source file path
      * @param string $destination Destination file path
+     * @param int $permissions File permissions in octal format (default: 0750)
      * @return bool True if copied successfully
      * @throws FileOperationException
      */
-    public static function copyFile(string $source, string $destination): bool
+    public static function copyFile(string $source, string $destination, int $permissions = 0750): bool
     {
         if (!is_file($source)) {
             $errorMessage = "Source file not found: {$source}";
@@ -46,6 +47,13 @@ class FileOperations
             throw new FileOperationException($errorMessage);
         }
 
+        // Set file permissions
+        if (!chmod($destination, $permissions)) {
+            $errorMessage = "Failed to set permissions for file: {$destination}";
+            Logger::error($errorMessage);
+            throw new FileOperationException($errorMessage);
+        }
+
         return true;
     }
 
@@ -55,13 +63,15 @@ class FileOperations
      * @param string $sourceDir Source directory
      * @param string $destinationDir Destination directory
      * @param array<string> $files File names to copy
+     * @param int $permissions File permissions in octal format (default: 0750)
      * @return array<string, bool> Array of [filename => success]
      * @throws FileOperationException
      */
     public static function copyMultipleFiles(
         string $sourceDir,
         string $destinationDir,
-        array $files
+        array $files,
+        int $permissions = 0750
     ): array {
         if (empty($files)) {
             return [];
@@ -76,7 +86,7 @@ class FileOperations
             $destinationPath = $destinationDir . $file;
 
             try {
-                self::copyFile($sourcePath, $destinationPath);
+                self::copyFile($sourcePath, $destinationPath, $permissions);
                 $results[$file] = true;
             } catch (FileOperationException $e) {
                 // Log with more context about what went wrong

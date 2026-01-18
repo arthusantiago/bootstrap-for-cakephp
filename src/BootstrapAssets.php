@@ -201,6 +201,7 @@ class BootstrapAssets
                 $assetConfig['destination']
             );
             $files = $assetConfig['files'] ?? [];
+            $filePermission = $assetConfig['filePermission'] ?? 0750;
 
             if (empty($files)) {
                 continue;
@@ -215,7 +216,7 @@ class BootstrapAssets
             }
 
             // Copy new files to temporary location
-            $results = FileOperations::copyMultipleFiles($source, $tempDestination, $files);
+            $results = FileOperations::copyMultipleFiles($source, $tempDestination, $files, $assetConfig['filePermission']);
 
             $copied = count(array_filter($results));
             $total = count($files);
@@ -232,6 +233,7 @@ class BootstrapAssets
 
                     if (file_exists($tempFile)) {
                         rename($tempFile, $destFile);
+                        chmod($destFile, $filePermission);
                     }
                 }
 
