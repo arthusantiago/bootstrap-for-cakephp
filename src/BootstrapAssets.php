@@ -223,21 +223,35 @@ class BootstrapAssets
 
             if ($copied === $total) {
                 // All files copied successfully - safe to swap
-                // 1. Delete old files from destination
+                // 1. Make sure the destination exists: on the first install a nested destination
+                //    (e.g. fonts/bootstrap-icons) doesn't exist yet, and rename() into it would fail.
+                if (!is_dir($destination) && !mkdir($destination, 0755, true) && !is_dir($destination)) {
+                    self::cleanupDirectory($tempDestination);
+                    $errorMessage = "Failed to create destination directory: {$destination}";
+                    Logger::error($errorMessage);
+                    throw new FileOperationException($errorMessage);
+                }
+
+                // 2. Delete old files from destination
                 FileOperations::deleteMultipleFiles($destination, $files);
 
-                // 2. Move new files from temp to destination
+                // 3. Move new files from temp to destination
                 foreach ($files as $file) {
                     $tempFile = rtrim($tempDestination, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
                     $destFile = rtrim($destination, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
 
                     if (file_exists($tempFile)) {
-                        rename($tempFile, $destFile);
+                        if (!rename($tempFile, $destFile)) {
+                            self::cleanupDirectory($tempDestination);
+                            $errorMessage = "Failed to move {$tempFile} to {$destFile}";
+                            Logger::error($errorMessage);
+                            throw new FileOperationException($errorMessage);
+                        }
                         chmod($destFile, $filePermission);
                     }
                 }
 
-                // 3. Clean up temp directory
+                // 4. Clean up temp directory
                 @rmdir($tempDestination);
 
                 self::write(
